@@ -3,5 +3,17 @@
 version = 3
 
 [[package]]
-name = "my-crate"
+name = "schwitzerflut-client"
+version = "0.1.0"
+
+[[package]]
+name = "schwitzerflut-protocol"
+version = "0.1.0"
+
+[[package]]
+name = "schwitzerflut-renderer"
+version = "0.1.0"
+
+[[package]]
+name = "schwitzerflut-server"
 version = "0.1.0"

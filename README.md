@@ -1,4 +1,3 @@
-# nix-rust-template
+# schwitzerflut
 
-template for rust projects with nix
 

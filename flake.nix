@@ -25,8 +25,8 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
-  outputs = { self, fenix, crane, flake-parts, advisory-db, bundlers, ... }:
-    flake-parts.lib.mkFlake { inherit self; } ({ withSystem, ... }: {
+  outputs = inputs@{ self, fenix, crane, flake-parts, advisory-db, bundlers, ... }:
+    flake-parts.lib.mkFlake { inherit self inputs; } ({ withSystem, ... }: {
       systems = [
         "x86_64-linux"
         "x86_64-darwin"
@@ -45,43 +45,75 @@
           ];
 
           craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
-          src = craneLib.cleanCargoSource ./.;
 
-          nativeBuildInputs = with pkgs; [ pkg-config ];
-          buildInputs = [ ];
+          commonBuildArgs = rec {
+            src = craneLib.cleanCargoSource ./.;
 
-          cargoArtifacts = craneLib.buildDepsOnly {
-            inherit src buildInputs nativeBuildInputs;
+            pname = "schwitzerflut";
+            version = "v0.1.0";
+
+            nativeBuildInputs = with pkgs; [ pkg-config ];
+            buildInputs = [ ];
           };
 
-          my-crate = craneLib.buildPackage {
-            inherit cargoArtifacts src buildInputs nativeBuildInputs;
-          };
+          cargoArtifacts = craneLib.buildDepsOnly ({} // commonBuildArgs);
+          clippy-check = craneLib.cargoClippy ({
+              inherit cargoArtifacts;
+              cargoClippyExtraArgs = "--all-features -- --deny warnings";
+            }
+            // commonBuildArgs);
+
+          rust-fmt-check = craneLib.cargoFmt ({
+              inherit (commonBuildArgs) src;
+            }
+            // commonBuildArgs);
+
+          test-check = craneLib.cargoNextest ({
+              inherit cargoArtifacts;
+              partitions = 1;
+              partitionType = "count";
+            }
+            // commonBuildArgs);
+
+          doc-check = craneLib.cargoDoc ({
+              inherit cargoArtifacts;
+            }
+            // commonBuildArgs);
+
+          audit-check = craneLib.cargoAudit ({
+              inherit (commonBuildArgs) src;
+              inherit advisory-db;
+            }
+            // commonBuildArgs);
+
+          server-package = craneLib.buildPackage ({
+              pname = "schwitzerflut-server";
+              cargoExtraFlags = "--bin schwitzerflut-server";
+              inherit cargoArtifacts;
+            }
+            // commonBuildArgs);
+
+          client-package = craneLib.buildPackage ({
+              pname = "schwitzerflut-client";
+              cargoExtraFlags = "--bin schwitzerflut-client";
+              inherit cargoArtifacts;
+            }
+            // commonBuildArgs);
         in
         {
-          packages.default = my-crate;
-
-          apps.default = {
-            type = "app";
-            program = "${self.packages.${system}.default}/bin/my-crate";
-          };
-
           devShells.default = pkgs.mkShell {
             inputsFrom = builtins.attrValues self.checks;
           };
 
+          packages =
+            {
+              server = server-package;
+              client = client-package;
+            };
+
           checks =
             {
-              inherit my-crate;
-
-              my-crate-clippy = craneLib.cargoClippy {
-                inherit cargoArtifacts src buildInputs nativeBuildInputs;
-                cargoClippyExtraArgs = "--all-targets -- --deny warnings";
-              };
-
-              my-crate-doc = craneLib.cargoDoc { inherit cargoArtifacts src buildInputs nativeBuildInputs; };
-              my-crate-fmt = craneLib.cargoFmt { inherit src; };
-              my-crate-audit = craneLib.cargoAudit { inherit src advisory-db; };
+              inherit clippy-check rust-fmt-check test-check doc-check audit-check server-package client-package;
             };
 
           formatter = pkgs.nixpkgs-fmt;
