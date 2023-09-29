@@ -52,6 +52,9 @@ jobs:
         system:
           - "aarch64-linux"
           - "x86_64-linux"
+        package:
+          - "server"
+          - "client"
 
     steps:
       - name: Checkout repository
@@ -86,7 +89,7 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Build package
-        run: nix build --accept-flake-config .#packages.${{ matrix.system }}.default
+        run: nix build --accept-flake-config .#packages.${{ matrix.system }}.${{ matrix.package }}
 
   bundle:
     runs-on: ubuntu-latest
@@ -105,6 +108,9 @@ jobs:
             extension: "tar.xz"
           - name: "rpm"
             extension: "rpm"
+        package:
+          - "server"
+          - "client"
 
     steps:
       - name: Checkout repository
@@ -144,13 +150,13 @@ jobs:
           --bundler .#${{ matrix.bundler.name }}
           --accept-flake-config
           --out-link "bundles/${{ github.event.repository.name }}-${{ matrix.system }}.${{ matrix.bundler.extension }}"
-          .#packages.${{ matrix.system }}.default
+          .#packages.${{ matrix.system }}.${{ matrix.package }}
 
       - name: Upload bundles
         if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.bundler.name }}-${{ matrix.system }}
+          name: ${{ matrix.package }}-${{ matrix.bundler.name }}-${{ matrix.system }}
           path: bundles/*
 
   release:
