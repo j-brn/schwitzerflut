@@ -29,8 +29,6 @@ impl Display for Coordinates {
     }
 }
 
-pub type BoardSize = Coordinates;
-
 #[derive(Error, Debug, Eq, PartialEq)]
 pub enum ParseCoordinatesError {
     #[error("Expected two integers seperated by a single whitespace")]
