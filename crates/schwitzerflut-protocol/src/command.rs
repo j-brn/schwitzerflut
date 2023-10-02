@@ -54,9 +54,9 @@ impl FromStr for SetPixelCommand {
             return Err(Self::Err::Syntax);
         }
 
-        let (color, coordinates) = s[4..].rsplit_once(' ').ok_or(Self::Err::Syntax)?;
-        let color = color.parse()?;
+        let (coordinates, color) = s[3..].rsplit_once(' ').ok_or(Self::Err::Syntax)?;
         let coordinates = coordinates.parse()?;
+        let color = color.parse()?;
 
         Ok(Self { color, coordinates })
     }
