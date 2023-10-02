@@ -56,49 +56,49 @@
             buildInputs = [ ];
           };
 
-          cargoArtifacts = craneLib.buildDepsOnly ({} // commonBuildArgs);
+          cargoArtifacts = craneLib.buildDepsOnly ({ } // commonBuildArgs);
           clippy-check = craneLib.cargoClippy ({
-              inherit cargoArtifacts;
-              cargoClippyExtraArgs = "--all-features -- --deny warnings";
-            }
-            // commonBuildArgs);
+            inherit cargoArtifacts;
+            cargoClippyExtraArgs = "--all-features -- --deny warnings";
+          }
+          // commonBuildArgs);
 
           rust-fmt-check = craneLib.cargoFmt ({
-              inherit (commonBuildArgs) src;
-            }
-            // commonBuildArgs);
+            inherit (commonBuildArgs) src;
+          }
+          // commonBuildArgs);
 
           test-check = craneLib.cargoNextest ({
-              inherit cargoArtifacts;
-              partitions = 1;
-              partitionType = "count";
-            }
-            // commonBuildArgs);
+            inherit cargoArtifacts;
+            partitions = 1;
+            partitionType = "count";
+          }
+          // commonBuildArgs);
 
           doc-check = craneLib.cargoDoc ({
-              inherit cargoArtifacts;
-            }
-            // commonBuildArgs);
+            inherit cargoArtifacts;
+          }
+          // commonBuildArgs);
 
           audit-check = craneLib.cargoAudit ({
-              inherit (commonBuildArgs) src;
-              inherit advisory-db;
-            }
-            // commonBuildArgs);
+            inherit (commonBuildArgs) src;
+            inherit advisory-db;
+          }
+          // commonBuildArgs);
 
           server-package = craneLib.buildPackage ({
-              pname = "schwitzerflut-server";
-              cargoExtraFlags = "--bin schwitzerflut-server";
-              inherit cargoArtifacts;
-            }
-            // commonBuildArgs);
+            pname = "schwitzerflut-server";
+            cargoExtraFlags = "--bin schwitzerflut-server";
+            inherit cargoArtifacts;
+          }
+          // commonBuildArgs);
 
           client-package = craneLib.buildPackage ({
-              pname = "schwitzerflut-client";
-              cargoExtraFlags = "--bin schwitzerflut-client";
-              inherit cargoArtifacts;
-            }
-            // commonBuildArgs);
+            pname = "schwitzerflut-client";
+            cargoExtraFlags = "--bin schwitzerflut-client";
+            inherit cargoArtifacts;
+          }
+          // commonBuildArgs);
         in
         {
           devShells.default = pkgs.mkShell {
