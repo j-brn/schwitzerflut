@@ -18,6 +18,9 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v4
+        with:
+          extra-conf: |
+            extra-platforms = aarch64-linux x86_64-linux
 
       - name: Cache Nix store
         uses: DeterminateSystems/magic-nix-cache-action@v2
@@ -49,18 +52,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Cache Nix store
-        uses: actions/cache@v3.3.2
-        id: nix-cache
-        with:
-          path: /tmp/nixcache
-          key: ${{ runner.os }}-${{ hashFiles('**/flake.lock', '**/flake.nix') }}
-
       - name: Set up QEMU binfmt for building aarch64
         uses: docker/setup-qemu-action@v3
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v4
+        with:
+          extra-conf: |
+            extra-platforms = aarch64-linux x86_64-linux
 
       - name: Cache Nix store
         uses: DeterminateSystems/magic-nix-cache-action@v2
@@ -104,6 +103,9 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v4
+        with:
+          extra-conf: |
+            extra-platforms = aarch64-linux x86_64-linux
 
       - name: Cache Nix store
         uses: DeterminateSystems/magic-nix-cache-action@v2
