@@ -89,6 +89,7 @@
           server-package = craneLib.buildPackage ({
             pname = "schwitzerflut-server";
             cargoExtraFlags = "--bin schwitzerflut-server";
+            meta.mainProgram = "/bin/schwitzerflut-server";
             inherit cargoArtifacts;
           }
           // commonBuildArgs);
@@ -96,6 +97,7 @@
           client-package = craneLib.buildPackage ({
             pname = "schwitzerflut-client";
             cargoExtraFlags = "--bin schwitzerflut-client";
+            meta.mainProgram = "/bin/schwitzerflut-client";
             inherit cargoArtifacts;
           }
           // commonBuildArgs);
