@@ -20,7 +20,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
-  outputs = inputs@{ self, fenix, crane, flake-parts, advisory-db, bundlers, ... }:
+  outputs = inputs@{ self, fenix, crane, flake-parts, advisory-db, ... }:
     flake-parts.lib.mkFlake { inherit self inputs; } ({ withSystem, ... }: {
       systems = [
         "x86_64-linux"
@@ -115,8 +115,6 @@
 
           formatter = pkgs.nixpkgs-fmt;
         };
-
-      flake.bundlers = bundlers.bundlers;
     });
 
   nixConfig = {
