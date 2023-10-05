@@ -17,11 +17,6 @@
       flake = false;
     };
 
-    bundlers = {
-      url = "github:viperML/bundlers";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
@@ -89,7 +84,7 @@
           server-package = craneLib.buildPackage ({
             pname = "schwitzerflut-server";
             cargoExtraFlags = "--bin schwitzerflut-server";
-            meta.mainProgram = "/bin/schwitzerflut-server";
+            meta.mainProgram = "schwitzerflut-server";
             inherit cargoArtifacts;
           }
           // commonBuildArgs);
@@ -97,7 +92,7 @@
           client-package = craneLib.buildPackage ({
             pname = "schwitzerflut-client";
             cargoExtraFlags = "--bin schwitzerflut-client";
-            meta.mainProgram = "/bin/schwitzerflut-client";
+            meta.mainProgram = "schwitzerflut-client";
             inherit cargoArtifacts;
           }
           // commonBuildArgs);
