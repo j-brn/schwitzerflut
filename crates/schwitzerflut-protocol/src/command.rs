@@ -16,7 +16,7 @@ impl FromStr for Command {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             s if s.starts_with("PX") => Ok(Self::SetPixel(s.parse::<SetPixelCommand>()?)),
-            s if s == "SIZE" => Ok(Self::GetCanvasSize(GetCanvasSizeCommand)),
+            "SIZE" => Ok(Self::GetCanvasSize(GetCanvasSizeCommand)),
             _ => Err(Self::Err::UnknownCommand),
         }
     }
