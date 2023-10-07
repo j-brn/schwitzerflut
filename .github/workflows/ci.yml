@@ -34,7 +34,7 @@ jobs:
       - name: Check flake
         run: nix flake check --accept-flake-config
 
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     needs:
       - test
@@ -73,6 +73,8 @@ jobs:
       - name: Build package
         run: nix build --accept-flake-config .#packages.${{ matrix.system }}.${{ matrix.package }}
 
+
+
   bundle:
     runs-on: ubuntu-latest
     needs:
@@ -87,15 +89,19 @@ jobs:
           - name: "deb"
             path: "github:viperML/bundlers#deb"
             extension: "deb"
+
           - name: "pacman"
             path: "github:viperML/bundlers#pacman"
             extension: "tar.xz"
+
           - name: "rpm"
             path: "github:viperML/bundlers#rpm"
             extension: "rpm"
+
           - name: "docker"
             path: "github:viperML/bundlers#docker"
             extension: "tar.gz"
+            
           - name: "appimage"
             path: "github:ralismark/nix-appimage"
             extension: "AppImage"

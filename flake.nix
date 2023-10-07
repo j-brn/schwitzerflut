@@ -100,6 +100,7 @@
         {
           devShells.default = pkgs.mkShell {
             inputsFrom = builtins.attrValues self.checks;
+            buildInputs = [ rustToolchain ];
           };
 
           packages =
