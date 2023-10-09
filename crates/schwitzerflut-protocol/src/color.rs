@@ -1,13 +1,14 @@
+use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::num::ParseIntError;
 use std::str::FromStr;
 use thiserror::Error;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Copy, Clone, Eq, PartialEq, Debug)]
 pub struct RgbColor {
-    pub(crate) r: u8,
-    pub(crate) g: u8,
-    pub(crate) b: u8,
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
 }
 
 impl FromStr for RgbColor {
@@ -32,10 +33,10 @@ impl Display for RgbColor {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Copy, Clone, Eq, PartialEq, Debug)]
 pub struct RgbaColor {
-    pub(crate) rgb: RgbColor,
-    pub(crate) alpha: u8,
+    pub rgb: RgbColor,
+    pub alpha: u8,
 }
 
 impl FromStr for RgbaColor {
@@ -59,7 +60,7 @@ impl Display for RgbaColor {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Color {
     Rgb(RgbColor),
     Rgba(RgbaColor),

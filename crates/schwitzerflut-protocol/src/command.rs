@@ -1,10 +1,11 @@
 use crate::color::{Color, ParseColorError};
 use crate::coordinates::{Coordinates, ParseCoordinatesError};
+use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use thiserror::Error;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub enum Command {
     GetCanvasSize(GetCanvasSizeCommand),
     SetPixel(SetPixelCommand),
@@ -40,10 +41,10 @@ pub enum ParseCommandError {
     ParseSetPixelCommand(#[from] ParseSetPixelCommandError),
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 pub struct SetPixelCommand {
-    coordinates: Coordinates,
-    color: Color,
+    pub coordinates: Coordinates,
+    pub color: Color,
 }
 
 impl FromStr for SetPixelCommand {
@@ -85,7 +86,7 @@ pub enum ParseSetPixelCommandError {
     ParseColorError(#[from] ParseColorError),
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub struct GetCanvasSizeCommand;
 
 impl Display for GetCanvasSizeCommand {

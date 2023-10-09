@@ -1,12 +1,13 @@
+use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::num::ParseIntError;
 use std::str::FromStr;
 use thiserror::Error;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Coordinates {
-    pub(crate) x: u32,
-    pub(crate) y: u32,
+    pub x: u32,
+    pub y: u32,
 }
 
 impl FromStr for Coordinates {

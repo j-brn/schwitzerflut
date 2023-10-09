@@ -1,3 +1,3 @@
-mod color;
-mod command;
-mod coordinates;
+pub mod color;
+pub mod command;
+pub mod coordinates;
