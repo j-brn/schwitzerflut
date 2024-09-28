@@ -1,14 +1,10 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    crane.url = "github:ipetkov/crane";
 
     fenix = {
       url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    crane = {
-      url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -31,7 +27,7 @@
 
       perSystem = { lib, config, self', inputs', pkgs, system, ... }:
         let
-          rustToolchain = fenix.packages.${system}.stable.withComponents [
+          rustToolchain = fenix.packages.${system}.latest.withComponents [
             "rustc"
             "cargo"
             "rustfmt"
@@ -41,61 +37,19 @@
 
           craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
-          commonBuildArgs = rec {
+          commonArgs = {
             src = craneLib.cleanCargoSource ./.;
 
             pname = "schwitzerflut";
             version = "v0.1.0";
 
-            nativeBuildInputs = with pkgs; [ pkg-config ];
-            buildInputs = [ ];
+            nativeBuildInputs = with pkgs; [ pkg-config clang mold ];
+            buildInputs = [ ] ++ lib.optionals pkgs.stdenv.isDarwin [ pkgs.libiconv ];
+
+            RUSTFLAGS="-C linker=clang -C link-arg=-fuse-ld=${pkgs.mold}/bin/mold";
           };
 
-          cargoArtifacts = craneLib.buildDepsOnly ({ } // commonBuildArgs);
-          clippy-check = craneLib.cargoClippy ({
-            inherit cargoArtifacts;
-            cargoClippyExtraArgs = "--all-features -- --deny warnings";
-          }
-          // commonBuildArgs);
-
-          rust-fmt-check = craneLib.cargoFmt ({
-            inherit (commonBuildArgs) src;
-          }
-          // commonBuildArgs);
-
-          test-check = craneLib.cargoNextest ({
-            inherit cargoArtifacts;
-            partitions = 1;
-            partitionType = "count";
-          }
-          // commonBuildArgs);
-
-          doc-check = craneLib.cargoDoc ({
-            inherit cargoArtifacts;
-          }
-          // commonBuildArgs);
-
-          audit-check = craneLib.cargoAudit ({
-            inherit (commonBuildArgs) src;
-            inherit advisory-db;
-          }
-          // commonBuildArgs);
-
-          server-package = craneLib.buildPackage ({
-            pname = "schwitzerflut-server";
-            cargoExtraFlags = "--bin schwitzerflut-server";
-            meta.mainProgram = "schwitzerflut-server";
-            inherit cargoArtifacts;
-          }
-          // commonBuildArgs);
-
-          client-package = craneLib.buildPackage ({
-            pname = "schwitzerflut-client";
-            cargoExtraFlags = "--bin schwitzerflut-client";
-            meta.mainProgram = "schwitzerflut-client";
-            inherit cargoArtifacts;
-          }
-          // commonBuildArgs);
+          cargoArtifacts = craneLib.buildDepsOnly commonArgs;
         in
         {
           devShells.default = pkgs.mkShell {
@@ -105,30 +59,41 @@
 
           packages =
             {
-              server = server-package;
-              client = client-package;
+              client = craneLib.buildPackage (commonArgs // {
+                pname = "client";
+                cargoExtraFlags = "-p schwitzerflut-client";
+                meta.mainProgram = "schwitzerflut-client";
+                inherit cargoArtifacts;
+              });
+
+              rustdoc = craneLib.cargoDoc (commonArgs // { inherit cargoArtifacts; });
             };
 
           checks =
             {
-              inherit clippy-check rust-fmt-check test-check doc-check audit-check server-package client-package;
-            };
+              fmt = craneLib.cargoFmt (commonArgs);
+              audit = craneLib.cargoAudit (commonArgs // { inherit advisory-db; });
+
+              clippy-check = craneLib.cargoClippy (commonArgs // {
+                inherit cargoArtifacts;
+                cargoClippyExtraArgs = "--all-features -- --deny warnings";
+              });
+
+              test-check = craneLib.cargoNextest (commonArgs // {
+                inherit cargoArtifacts;
+                partitions = 1;
+                partitionType = "count";
+              });
+            }
+            # build packages as part of the checks
+            // (lib.mapAttrs' (key: value: lib.nameValuePair (key + "-package") value) self'.packages);
 
           formatter = pkgs.nixpkgs-fmt;
         };
     });
 
   nixConfig = {
-    extra-trusted-substituters = [
-      "https://cache.nixos.org/"
-      "https://nix-community.cachix.org"
-      "https://nix-rust-template.cachix.org"
-    ];
-
-    extra-trusted-public-keys = [
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      "nix-rust-template.cachix.org-1:djhhKdQkilYrrV/GLYHq38Y+6hR4NAeT1NabRg6Cb7k="
-    ];
+    extra-trusted-substituters = [ "https://nix-community.cachix.org" ];
+    extra-trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
   };
 }
