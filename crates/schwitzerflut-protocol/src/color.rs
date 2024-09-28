@@ -112,7 +112,6 @@ pub enum ParseColorError {
 mod tests {
     use super::RgbColor;
     use crate::color::{Color, ParseColorError, RgbaColor};
-    use std::num::ParseIntError;
 
     #[test]
     fn test_parse_rgb() {
