@@ -3,6 +3,4 @@ resolver = "2"
 members = [
     "crates/schwitzerflut-client",
     "crates/schwitzerflut-protocol",
-    "crates/schwitzerflut-renderer",
-    "crates/schwitzerflut-server",
 ]

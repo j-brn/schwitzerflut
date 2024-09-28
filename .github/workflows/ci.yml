@@ -39,7 +39,6 @@ jobs:
           - "aarch64-linux"
           - "x86_64-linux"
         package:
-          - "server"
           - "client"
           - "rustdoc"
 
@@ -93,7 +92,6 @@ jobs:
             path: "github:ralismark/nix-appimage"
             extension: "AppImage"
         package:
-          - "server"
           - "client"
 
     steps:
