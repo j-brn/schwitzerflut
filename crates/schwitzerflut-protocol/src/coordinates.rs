@@ -10,6 +10,12 @@ pub struct Coordinates {
     pub y: u32,
 }
 
+impl Coordinates {
+    pub fn new(x: u32, y: u32) -> Self {
+        Self { x, y }
+    }
+}
+
 impl FromStr for Coordinates {
     type Err = ParseCoordinatesError;
 

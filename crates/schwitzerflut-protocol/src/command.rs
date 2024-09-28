@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use thiserror::Error;
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub enum Command {
     GetCanvasSize(GetCanvasSizeCommand),
     SetPixel(SetPixelCommand),
@@ -47,6 +47,12 @@ pub struct SetPixelCommand {
     pub color: Color,
 }
 
+impl SetPixelCommand {
+    pub fn new(coordinates: Coordinates, color: Color) -> Self {
+        Self { coordinates, color }
+    }
+}
+
 impl FromStr for SetPixelCommand {
     type Err = ParseSetPixelCommandError;
 
@@ -86,7 +92,7 @@ pub enum ParseSetPixelCommandError {
     ParseColorError(#[from] ParseColorError),
 }
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Copy, Clone)]
 pub struct GetCanvasSizeCommand;
 
 impl Display for GetCanvasSizeCommand {

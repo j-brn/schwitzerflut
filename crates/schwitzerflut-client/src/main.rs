@@ -1,5 +1,5 @@
 #![allow(unused)]
 
-mod source;
+mod command_generator;
 
 fn main() {}

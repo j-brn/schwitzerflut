@@ -11,6 +11,12 @@ pub struct RgbColor {
     pub b: u8,
 }
 
+impl RgbColor {
+    pub fn new(r: u8, g: u8, b: u8) -> Self {
+        Self { r, g, b }
+    }
+}
+
 impl FromStr for RgbColor {
     type Err = ParseColorError;
 
@@ -37,6 +43,12 @@ impl Display for RgbColor {
 pub struct RgbaColor {
     pub rgb: RgbColor,
     pub alpha: u8,
+}
+
+impl RgbaColor {
+    pub fn new(rgb: RgbColor, alpha: u8) -> Self {
+        Self { rgb, alpha }
+    }
 }
 
 impl FromStr for RgbaColor {
