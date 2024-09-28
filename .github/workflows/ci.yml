@@ -9,6 +9,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        system:
+          - "aarch64-linux"
+          - "x86_64-linux"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,7 +32,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Check flake
-        run: nix flake check --accept-flake-config
+        run: nix flake check --system ${{ matrix.system }}
 
   build:
     runs-on: ubuntu-latest
@@ -59,7 +65,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Build package
-        run: nix build --accept-flake-config .#packages.${{ matrix.system }}.${{ matrix.package }}
+        run: nix build .#packages.${{ matrix.system }}.${{ matrix.package }}
 
   bundle:
     runs-on: ubuntu-latest
@@ -114,7 +120,6 @@ jobs:
         run: >-
           nix bundle
           --bundler ${{ matrix.bundler.path }}
-          --accept-flake-config
           --out-link result
           .#packages.${{ matrix.system }}.${{ matrix.package }}
 
@@ -160,7 +165,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Build package
-        run: nix build --accept-flake-config .#rustdoc
+        run: nix build .#rustdoc
 
       - name: Prepare assets for upload
         run: cp -r --dereference --no-preserve=mode,ownership result/ public/
