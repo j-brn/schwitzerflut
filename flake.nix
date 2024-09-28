@@ -33,6 +33,7 @@
             "rustfmt"
             "clippy"
             "rust-src"
+            "llvm-tools"
           ];
 
           craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
