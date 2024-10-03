@@ -12,8 +12,14 @@ jobs:
     strategy:
       matrix:
         system:
-#          - "aarch64-linux"
+#         - "aarch64-linux"
           - "x86_64-linux"
+        check:
+          - rustfmt
+          - audit
+          - clippy
+          - test
+          - build-client
 
     steps:
       - name: Checkout repository
@@ -32,7 +38,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Check flake
-        run: nix flake check --system ${{ matrix.system }}
+        run: nix build .#checks.${{ matrix.system }}.${{ matrix.check }}
 
   build:
     runs-on: ubuntu-latest

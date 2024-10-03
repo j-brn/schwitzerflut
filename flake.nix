@@ -72,22 +72,22 @@
 
           checks =
             {
-              fmt = craneLib.cargoFmt (commonArgs);
+              rustfmt = craneLib.cargoFmt (commonArgs);
               audit = craneLib.cargoAudit (commonArgs // { inherit advisory-db; });
 
-              clippy-check = craneLib.cargoClippy (commonArgs // {
+              clippy = craneLib.cargoClippy (commonArgs // {
                 inherit cargoArtifacts;
                 cargoClippyExtraArgs = "--all-features -- --deny warnings";
               });
 
-              test-check = craneLib.cargoNextest (commonArgs // {
+              test = craneLib.cargoNextest (commonArgs // {
                 inherit cargoArtifacts;
                 partitions = 1;
                 partitionType = "count";
               });
             }
             # build packages as part of the checks
-            // (lib.mapAttrs' (key: value: lib.nameValuePair (key + "-package") value) self'.packages);
+            // (lib.mapAttrs' (key: value: lib.nameValuePair ("build-" + key) value) self'.packages);
 
           formatter = pkgs.nixpkgs-fmt;
         };
