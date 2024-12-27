@@ -8,13 +8,14 @@ use std::iter;
 use std::path::{Path, PathBuf};
 
 /// Pixel source
-pub struct Image {
+#[derive(Clone)]
+pub struct ImageSource {
     image: RgbaImage,
     offset: Coordinates,
     include_transparent_pixels: bool,
 }
 
-impl CommandGenerator for Image {
+impl CommandGenerator for ImageSource {
     fn commands(&self) -> impl Iterator<Item = Command> {
         self.image
             .enumerate_pixels()
@@ -38,14 +39,14 @@ impl CommandGenerator for Image {
     }
 }
 
-pub struct CommandGeneratorBuilder {
+pub struct ImageSourceBuilder {
     image: DynamicImage,
     offset: Option<Coordinates>,
     resize: Option<(u32, u32)>,
     include_transparent: bool,
 }
 
-impl CommandGeneratorBuilder {
+impl ImageSourceBuilder {
     pub fn new(image: DynamicImage) -> Self {
         Self {
             image,
@@ -77,14 +78,14 @@ impl CommandGeneratorBuilder {
         self
     }
 
-    pub fn build(self) -> Image {
+    pub fn build(self) -> ImageSource {
         let mut image = self.image;
 
         if let Some((width, height)) = self.resize {
             image.resize(width, height, FilterType::CatmullRom);
         }
 
-        Image {
+        ImageSource {
             image: image.to_rgba8(),
             offset: self.offset.unwrap_or(Coordinates::new(0, 0)),
             include_transparent_pixels: self.include_transparent,
@@ -94,7 +95,7 @@ impl CommandGeneratorBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::command_generator::image::{CommandGeneratorBuilder, Image};
+    use crate::command_generator::image::{ImageSource, ImageSourceBuilder};
     use crate::command_generator::CommandGenerator;
     use image::{DynamicImage, GenericImage, GenericImageView, Rgba, RgbaImage};
     use schwitzerflut_protocol::color::{Color, RgbColor, RgbaColor};
@@ -129,7 +130,7 @@ mod tests {
 
     #[test]
     pub fn test_image() {
-        let commands = CommandGeneratorBuilder::new(get_test_image())
+        let commands = ImageSourceBuilder::new(get_test_image())
             .include_transparent_pixels(true)
             .build()
             .commands()
@@ -207,7 +208,7 @@ mod tests {
 
     #[test]
     pub fn test_image_without_transparent_pixels() {
-        let commands = CommandGeneratorBuilder::new(get_test_image())
+        let commands = ImageSourceBuilder::new(get_test_image())
             .include_transparent_pixels(false)
             .build()
             .commands()
@@ -268,7 +269,7 @@ mod tests {
     }
     #[test]
     pub fn test_image_with_offset() {
-        let commands = CommandGeneratorBuilder::new(get_test_image())
+        let commands = ImageSourceBuilder::new(get_test_image())
             .include_transparent_pixels(false)
             .offset(Coordinates::new(1, 1))
             .build()

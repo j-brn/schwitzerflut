@@ -2,13 +2,23 @@ use crate::command_generator::CommandGenerator;
 use schwitzerflut_protocol::command::Command;
 
 /// CommandGenerator wrapper that implements simple modulus sharding
-struct Shard<G>
+pub struct Shard<G>
 where
     G: CommandGenerator,
 {
     generator: G,
     shard: usize,
     num_shards: usize,
+}
+
+impl<G: CommandGenerator> Shard<G> {
+    pub fn new(generator: G, shard: usize, num_shards: usize) -> Self {
+        Self {
+            generator,
+            shard,
+            num_shards,
+        }
+    }
 }
 
 impl<G> CommandGenerator for Shard<G>
