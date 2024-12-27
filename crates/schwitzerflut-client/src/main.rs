@@ -9,9 +9,11 @@ use clap::Parser;
 use image::DynamicImage;
 use schwitzerflut_protocol::command::Command;
 use schwitzerflut_protocol::coordinates::Coordinates;
+use std::error::Error;
 use std::fmt::format;
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
+use tokio::task;
 
 mod command_generator;
 mod stream;
@@ -38,12 +40,12 @@ struct Cli {
     width: Option<u32>,
 
     /// Whether to send set pixel commands for transparent pixels
-    #[arg(long, env, default_value_t = false)]
+    #[arg(long, env, default_value_t = true)]
     skip_transparent_pixels: bool,
 
     /// Shards to handle with this client. If there is more than one connection configured,
     /// then shards are distributed across them
-    #[arg(long, env, default_values_t = [1])]
+    #[arg(long, env, default_values_t = [1], value_delimiter=',')]
     shards: Vec<usize>,
 
     /// Total number of shards
@@ -81,18 +83,28 @@ async fn main() -> anyhow::Result<()> {
             .join("\n");
 
         handles.push(tokio::task::spawn(async move {
-            println!("Spawned send task for shard {}", n);
-            let stream = StreamWrapper::new(args.address).connect().await.unwrap();
-            println!("Shard {} connected sucessfully", n);
+            let stream = match StreamWrapper::new(args.address).connect().await {
+                Ok(stream) => {
+                    println!("shard {} connected successfully", n);
+                    stream
+                }
+                Err(e) => {
+                    eprintln!("shard {} failed to connect: {}", n, e);
+                    return;
+                }
+            };
 
             loop {
-                if let Err(e) = stream.send(&payload).await {
-                    eprintln!("{}", e);
-                    break;
+                match stream.send(&payload).await {
+                    Ok(_) => {}
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        break;
+                    }
                 }
             }
 
-            println!("Shard {} disconnected", n);
+            println!("shard {} disconnected", n);
         }));
     }
 
