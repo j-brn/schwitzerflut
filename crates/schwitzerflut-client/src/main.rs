@@ -70,6 +70,8 @@ async fn main() -> anyhow::Result<()> {
         builder.build()
     };
 
+    let mut handles = Vec::new();
+
     for n in args.shards {
         let shard = Shard::new(source.clone(), n, args.num_shards);
         let payload = shard
@@ -78,19 +80,24 @@ async fn main() -> anyhow::Result<()> {
             .collect::<Vec<String>>()
             .join("\n");
 
-        tokio::task::spawn(async move {
+        handles.push(tokio::task::spawn(async move {
             println!("Spawned send task for shard {}", n);
             let stream = StreamWrapper::new(args.address).connect().await.unwrap();
             println!("Shard {} connected sucessfully", n);
 
             loop {
-                if stream.send(&payload).await.is_err() {
+                if let Err(e) = stream.send(&payload).await {
+                    eprintln!("{}", e);
                     break;
                 }
             }
 
             println!("Shard {} disconnected", n);
-        });
+        }));
+    }
+
+    for handle in handles {
+        let _ = handle.await;
     }
 
     Ok(())
