@@ -13,7 +13,6 @@ use std::error::Error;
 use std::fmt::format;
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
-use tokio::task;
 
 mod command_generator;
 mod stream;
@@ -53,8 +52,7 @@ struct Cli {
     num_shards: usize,
 }
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
     let args = Cli::parse();
 
     let source = {
@@ -75,6 +73,17 @@ async fn main() -> anyhow::Result<()> {
     let mut handles = Vec::new();
 
     for n in args.shards {
+        let stream = match StreamWrapper::new(args.address).connect() {
+            Ok(stream) => {
+                println!("shard {} connected successfully", n);
+                stream
+            }
+            Err(e) => {
+                eprintln!("shard {} failed to connect: {}", n, e);
+                continue;
+            }
+        };
+
         let shard = Shard::new(source.clone(), n, args.num_shards);
         let payload = shard
             .commands()
@@ -82,34 +91,15 @@ async fn main() -> anyhow::Result<()> {
             .collect::<Vec<String>>()
             .join("\n");
 
-        handles.push(tokio::task::spawn(async move {
-            let stream = match StreamWrapper::new(args.address).connect().await {
-                Ok(stream) => {
-                    println!("shard {} connected successfully", n);
-                    stream
-                }
-                Err(e) => {
-                    eprintln!("shard {} failed to connect: {}", n, e);
-                    return;
-                }
-            };
+        handles.push(std::thread::spawn(move || {
+            stream.send(payload);
 
-            loop {
-                match stream.send(&payload).await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        eprintln!("{}", e);
-                        break;
-                    }
-                }
-            }
-
-            println!("shard {} disconnected", n);
+            println!("shard {} disconnected", n)
         }));
     }
 
     for handle in handles {
-        let _ = handle.await;
+        let _ = handle.join();
     }
 
     Ok(())
