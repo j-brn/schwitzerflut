@@ -35,7 +35,7 @@ jobs:
             extra-platforms = aarch64-linux x86_64-linux
 
       - name: Cache Nix store
-        uses: DeterminateSystems/magic-nix-cache-action@v8
+        uses: DeterminateSystems/magic-nix-cache-action@v9
 
       - name: Check flake
         run: nix build .#checks.${{ matrix.system }}.${{ matrix.check }}
@@ -68,7 +68,7 @@ jobs:
             extra-platforms = aarch64-linux x86_64-linux
 
       - name: Cache Nix store
-        uses: DeterminateSystems/magic-nix-cache-action@v8
+        uses: DeterminateSystems/magic-nix-cache-action@v9
 
       - name: Build package
         run: nix build .#packages.${{ matrix.system }}.${{ matrix.package }}
@@ -120,7 +120,7 @@ jobs:
             extra-platforms = aarch64-linux x86_64-linux
 
       - name: Cache Nix store
-        uses: DeterminateSystems/magic-nix-cache-action@v8
+        uses: DeterminateSystems/magic-nix-cache-action@v9
 
       - name: Build ${{ matrix.bundler.name }} package for ${{ matrix.system }}
         run: >-
@@ -168,7 +168,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v15
 
       - name: Cache Nix store
-        uses: DeterminateSystems/magic-nix-cache-action@v8
+        uses: DeterminateSystems/magic-nix-cache-action@v9
 
       - name: Build package
         run: nix build .#rustdoc
